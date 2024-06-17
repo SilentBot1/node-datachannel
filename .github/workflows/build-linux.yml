@@ -38,10 +38,11 @@ jobs:
     runs-on: ubuntu-20.04
     container: node:16-alpine
     steps:
-      - uses: actions/checkout@v2
       - name: Install musl
         run: |
           apk add build-base cmake git openssl-libs-static openssl-dev
+      - name: Clone
+        run: git clone https://github.com/SilentBot1/node-datachannel.git && cd node-datachannel
       - name: Build
         run: npm install --build-from-source
         env:
