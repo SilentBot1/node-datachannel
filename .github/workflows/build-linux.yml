@@ -36,11 +36,11 @@ jobs:
 #        env:
 #          CI: true
 
-  build-linux-musl-arm64:
+  build-linux-musl-amd64:
     runs-on: ubuntu-20.04
     container:
       image: node:18-alpine
-      options: --user root --platform linux/arm/v7
+      options: --user root --platform linux/amd64
     steps:
       - name: Install musl
         run: |
@@ -60,11 +60,11 @@ jobs:
         env:
           CI: true
 
-  build-linux-musl-amd64:
-    runs-on: ubuntu-20.04
+  build-linux-musl-arm64:
+    runs-on: macos-latest
     container:
       image: node:18-alpine
-      options: --user root --platform linux/amd64
+      options: --user root --platform linux/arm64
     steps:
       - name: Install musl
         run: |
