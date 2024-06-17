@@ -36,7 +36,9 @@ jobs:
 
   build-linux-musl:
     runs-on: ubuntu-20.04
-    container: node:16-alpine
+    container:
+      image: node:16-alpine
+      options: --user root
     steps:
       - name: Install musl
         run: |
