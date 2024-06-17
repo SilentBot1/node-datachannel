@@ -39,7 +39,8 @@ jobs:
     container:
       image: node:18-alpine
       options: --user root
-    permissions: write
+    permissions:
+      contents: write
     steps:
       - name: Install musl
         run: |
