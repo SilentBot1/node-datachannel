@@ -37,7 +37,7 @@ jobs:
   build-linux-musl:
     runs-on: ubuntu-20.04
     container:
-      image: node:16-alpine
+      image: node:18-alpine
       options: --user root
     steps:
       - name: Install musl
@@ -45,22 +45,18 @@ jobs:
           apk add build-base cmake git openssl-libs-static openssl-dev
       - name: Clone
         run: git clone https://github.com/SilentBot1/node-datachannel.git .
-        working-directory: ~/node-datachannel
       - name: Build
         run: npm install --build-from-source
-        working-directory: ~/node-datachannel
         env:
           CI: true
       - name: Test
         run: npm run test
-        working-directory: ~/node-datachannel
         env:
           CI: true
       - name: Upload
         run: node_modules/.bin/prebuild -r napi --backend cmake-js --upload -u ${{ secrets.GITHUB_TOKEN }}
         env:
           CI: true
-        working-directory: ~/node-datachannel
 
 #  build-linux-armv7:
 #    runs-on: ubuntu-20.04
