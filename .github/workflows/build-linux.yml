@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-20.04
     container:
       image: node:18-alpine
-      options: --user root --platform linux/arm64
+      options: --user root --platform linux/arm/v7
     steps:
       - name: Install musl
         run: |
