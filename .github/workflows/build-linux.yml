@@ -62,27 +62,22 @@ jobs:
 
   build-linux-musl-arm64:
     runs-on: macos-latest
-    container:
-      image: node:18-alpine
-      options: --user root --platform linux/arm64
+#    container:
+#      image: node:18-alpine
+#      options: --user root --platform linux/arm64
     steps:
-      - name: Install musl
+      - name: Install Docker
         run: |
-          apk add build-base cmake git openssl-libs-static openssl-dev
-      - name: Clone
-        run: git clone https://github.com/SilentBot1/node-datachannel.git .
-      - name: Build
-        run: npm install --build-from-source
-        env:
-          CI: true
-      - name: Test
-        run: npm run test
-        env:
-          CI: true
-      - name: Upload
-        run: node_modules/.bin/prebuild -r napi --backend cmake-js --upload -u ${{ secrets.GITHUB_TOKEN }}
-        env:
-          CI: true
+          brew install docker
+      - name: Build Application
+        uses: docker://node:18-alpine
+        runs: [
+          "apk add build-base cmake git openssl-libs-static openssl-dev",
+          "git clone https://github.com/SilentBot1/node-datachannel.git .",
+          "CI=true npm install --build-from-source",
+          "CI=true npm run test",
+          "CI=true node_modules/.bin/prebuild -r napi --backend cmake-js --upload -u ${{ secrets.GITHUB_TOKEN }}"
+        ]
 
 #  build-linux-armv7:
 #    runs-on: ubuntu-20.04
