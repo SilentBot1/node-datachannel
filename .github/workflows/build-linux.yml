@@ -9,6 +9,8 @@ on:
 env:
   ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
+permissions: write-all
+
 jobs:
 #  build-linux:
 #    runs-on: ubuntu-20.04
@@ -39,8 +41,6 @@ jobs:
     container:
       image: node:18-alpine
       options: --user root
-    permissions:
-      contents: write
     steps:
       - name: Install musl
         run: |
