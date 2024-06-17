@@ -55,7 +55,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/murat-dogan/node-datachannel.git"
+        "url": "git+https://github.com/silentbot1/node-datachannel.git"
     },
     "keywords": [
         "libdatachannel",
