@@ -42,7 +42,7 @@ jobs:
         run: |
           apk add build-base cmake git openssl-libs-static openssl-dev
       - name: Clone
-        run: git clone https://github.com/SilentBot1/node-datachannel.git && cd node-datachannel
+        run: git clone https://github.com/SilentBot1/node-datachannel.git .
       - name: Build
         run: npm install --build-from-source
         env:
