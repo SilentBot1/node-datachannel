@@ -36,14 +36,20 @@ jobs:
             flags: -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=hard -fPIC
             gcc-install: gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
             gcc: arm-linux-gnueabihf-gcc 
-          - archid: arm
-            arch: arm
-            platform: ubuntu
           - archid: aarch64
             arch: arm64
             flags: -march=armv8-a -fPIC
             gcc-install: gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
             gcc: aarch64-linux-gnu-gcc 
+          # gcc has issues building on the same arch but for a different libc
+          - arch: amd64
+            platform: alpine
+            gcc-install: clang lld
+            gcc: clang
+          # ubuntu uses the triple `arm-linux-gnueabihf` instead of alpine's `armv7-alpine-linux-musleabihf`
+          - archid: arm
+            arch: arm
+            platform: ubuntu
 
     steps:
       - name: Checkout
@@ -62,7 +68,7 @@ jobs:
         with:
           platforms: ${{ matrix.arch }}
       - name: Install system dependencies
-        run: sudo apt update && sudo apt install -y podman clang lld ${{ matrix.gcc-install }}
+        run: sudo apt update && sudo apt install -y podman ninja-build ${{ matrix.gcc-install }}
       - name: Build sysroot
         run: "sudo podman build -t ndc-buildroot:${{ matrix.platform }}-${{ matrix.arch }} ./build-containers --file Dockerfile.${{ matrix.platform }} --platform linux/${{ matrix.arch }}"
       - name: Mount sysroot
