@@ -20,8 +20,10 @@ jobs:
         include:
           - triple: "alpine-linux-musl"
             platform: alpine
+            libc: musl
           - triple: "linux-gnu"
             platform: ubuntu
+            libc: glibc
           - archid: x86_64
             arch: amd64
           - archid: aarch64
@@ -52,11 +54,12 @@ jobs:
         id: sysroot
         run: echo "sysroot=$(sudo podman image mount ndc-buildroot:${{ matrix.platform }}-${{ matrix.arch }})" >> $GITHUB_OUTPUT
       - name: Build and upload
-        run: sudo node_modules/.bin/prebuild --arch $ {{ matrix.arch }} -r napi --backend cmake-js --upload -u ${{ secrets.GITHUB_TOKEN }} -- --CDCMAKE_TOOLCHAIN_FILE:FILEPATH=./cmake/toolchain/ci.cmake
+        run: sudo node_modules/.bin/prebuild --arch ${{ matrix.arch }} -r napi --backend cmake-js --upload -u ${{ secrets.GITHUB_TOKEN }} -- --CDCMAKE_TOOLCHAIN_FILE:FILEPATH=./cmake/toolchain/ci.cmake
         env:
           SYSROOT: ${{ steps.sysroot.outputs.sysroot }}
           TRIPLE: ${{ matrix.archid }}-${{ matrix.triple }}
           COMPILER_FLAGS: ${{ matrix.flags }}
+          LIBC: ${{ matrix.libc }}
           CI: true
 
   # build-linux-musl-amd64:
