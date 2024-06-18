@@ -35,7 +35,7 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Build
+      - name: Install node dependencies
         run: npm install --ignore-scripts
         env:
           CI: true
@@ -44,17 +44,17 @@ jobs:
         uses: docker/setup-qemu-action@v3
         with:
           platforms: ${{ matrix.arch }}
-      - name: Install dependencies
+      - name: Install system dependencies
         run: sudo apt update && sudo apt install -y podman clang lld
       - name: Build sysroot
         run: "sudo podman build -t ndc-buildroot:${{ matrix.platform }}-${{ matrix.arch }} ./build-containers --file Dockerfile.${{ matrix.platform }}"
       - name: Mount sysroot
         id: sysroot
-        run: "sudo podman image mount ndc-buildroot:${{ matrix.platform }}-${{ matrix.arch }}"
+        run: echo "sysroot=$(sudo podman image mount ndc-buildroot:${{ matrix.platform }}-${{ matrix.arch }})" >> $GITHUB_OUTPUT
       - name: Build and upload
-        run: node_modules/.bin/prebuild --arch $ {{ matrix.arch }} -r napi --upload -u ${{ secrets.GITHUB_TOKEN }} -- --CDCMAKE_TOOLCHAIN_FILE:FILEPATH=./cmake/toolchain/ci.cmake
+        run: node_modules/.bin/prebuild --arch $ {{ matrix.arch }} -r napi --backend cmake-js --upload -u ${{ secrets.GITHUB_TOKEN }} -- --CDCMAKE_TOOLCHAIN_FILE:FILEPATH=./cmake/toolchain/ci.cmake
         env:
-          SYSROOT: ${{ steps.sysroot.outputs.stdout }}
+          SYSROOT: ${{ steps.sysroot.outputs.sysroot }}
           TRIPLE: ${{ matrix.archid }}-${{ matrix.triple }}
           COMPILER_FLAGS: ${{ matrix.flags }}
           CI: true
