@@ -29,7 +29,7 @@ jobs:
           - archid: aarch64
             arch: arm64
             flags: -march=armv8-a
-            gcc-install: gcc-aarch64-linux-gnu
+            gcc-install: gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
             gcc: aarch64-linux-gnu-gcc
             
 
