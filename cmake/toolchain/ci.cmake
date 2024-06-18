@@ -19,3 +19,7 @@ message(STATUS "Compiling for: ${triple}")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} $ENV{COMPILER_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} $ENV{COMPILER_FLAGS}")
+
+if (CMAKE_C_FLAGS MATCHES -fPIC)
+    add_link_options("-fPIC")
+endif ()
