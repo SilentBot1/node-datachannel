@@ -30,8 +30,7 @@ jobs:
             arch: arm64
             flags: -march=armv8-a
             gcc-install: gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-            gcc: aarch64-linux-gnu-gcc
-            
+            gcc: aarch64-linux-gnu-gcc 
 
     steps:
       - name: Checkout
@@ -52,7 +51,7 @@ jobs:
       - name: Install system dependencies
         run: sudo apt update && sudo apt install -y podman clang lld ${{ matrix.gcc-install }}
       - name: Build sysroot
-        run: "sudo podman build -t ndc-buildroot:${{ matrix.platform }}-${{ matrix.arch }} ./build-containers --file Dockerfile.${{ matrix.platform }}"
+        run: "sudo podman build -t ndc-buildroot:${{ matrix.platform }}-${{ matrix.arch }} ./build-containers --file Dockerfile.${{ matrix.platform }} --platform linux/${{ matrix.arch }}"
       - name: Mount sysroot
         id: sysroot
         run: echo "sysroot=$(sudo podman image mount ndc-buildroot:${{ matrix.platform }}-${{ matrix.arch }})" >> $GITHUB_OUTPUT
