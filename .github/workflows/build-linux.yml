@@ -42,7 +42,8 @@ jobs:
       - if: matrix.arch != 'amd64'
         name: Set up QEMU
         uses: docker/setup-qemu-action@v3
-        platforms: ${{ matrix.arch }}
+        with:
+          platforms: ${{ matrix.arch }}
       - name: Install dependencies
         run: sudo apt update && sudo apt install -y podman clang lld
       - name: Build sysroot
