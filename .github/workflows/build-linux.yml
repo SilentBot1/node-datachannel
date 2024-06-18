@@ -33,7 +33,8 @@ jobs:
             
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        run: git clone https://github.com/SilentBot1/node-datachannel.git .
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
