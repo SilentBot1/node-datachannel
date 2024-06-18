@@ -1,2 +1,2 @@
 FROM alpine:3.16
-RUN apk add build-base cmake nodejs npm git openssl-libs-static openssl-dev
+RUN apk add build-base openssl-libs-static openssl-dev
