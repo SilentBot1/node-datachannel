@@ -22,9 +22,11 @@ jobs:
         include:
           - triple: "alpine-linux-musl"
             platform: alpine
+            version: 3.16
             libc: musl
           - triple: "linux-gnu"
             platform: ubuntu
+            version: 20.04
           - archid: x86_64
             nodearch: x64
             arch: amd64
@@ -52,6 +54,10 @@ jobs:
           - archid: arm
             arch: arm
             platform: ubuntu
+          # ubuntu 20.04 uses openssl 1.1.1f, however static versions of openssl 1.1.1 are bugged on aarch64. We use ubuntu 22.04 instead.
+          - version: 22.04
+            arch: arm64
+            platform: ubuntu
 
     steps:
       - uses: actions/checkout@v4
@@ -71,7 +77,7 @@ jobs:
       - name: Install system dependencies
         run: sudo apt update && sudo apt install -y podman ninja-build ${{ matrix.gcc-install }}
       - name: Build sysroot
-        run: "sudo podman build -t ndc-buildroot:${{ matrix.platform }}-${{ matrix.arch }} ./build-containers --file Dockerfile.${{ matrix.platform }} --platform linux/${{ matrix.arch }}"
+        run: sudo podman build -t ndc-buildroot:${{ matrix.platform }}-${{ matrix.arch }} ./build-containers --file Dockerfile.${{ matrix.platform }} --platform linux/${{ matrix.arch }} --build-arg="version=${{ matrix.version }}"
       - name: Mount sysroot
         id: sysroot
         run: echo "sysroot=$(sudo podman image mount ndc-buildroot:${{ matrix.platform }}-${{ matrix.arch }})" >> $GITHUB_OUTPUT
