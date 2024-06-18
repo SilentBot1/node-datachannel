@@ -27,7 +27,7 @@ jobs:
             libc: musl
           - triple: "linux-gnu"
             platform: debian
-            version: buster
+            version: bullseye
           # Set baselines per architecture
           - archid: x86_64
             nodearch: x64
