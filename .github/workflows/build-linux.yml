@@ -14,7 +14,20 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        node-version: [ 16.x]
+        node-version: [16.x]
+        arch: [amd64, arm64]
+        platform: [ubuntu, alpine]
+        include:
+          - triple: "alpine-linux-musl"
+            platform: alpine
+          - triple: "linux-gnu"
+            platform: ubuntu
+          - archid: x86_64
+            arch: amd64
+          - archid: aarch64
+            arch: arm64
+            flags: -march=armv8-a
+            
 
     steps:
       - uses: actions/checkout@v2
@@ -23,97 +36,107 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Build
-        run: npm install --build-from-source
+        run: npm install --ignore-scripts
         env:
           CI: true
-      - name: Test
-        run: npm run test
+      - if: matrix.arch != 'amd64'
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        platforms: ${{ matrix.arch }}
+      - name: Install dependencies
+        run: sudo apt update && sudo apt install -y podman clang lld
+      - name: Build sysroot
+        run: "sudo podman build -t ndc-buildroot:${{ matrix.platform }}-${{ matrix.arch }} ./build-containers --file Dockerfile.${{ matrix.platform }}"
+      - name: Mount sysroot
+        id: sysroot
+        run: "sudo podman image mount ndc-buildroot:${{ matrix.platform }}-${{ matrix.arch }}"
+      - name: Build and upload
+        run: node_modules/.bin/prebuild --arch $ {{ matrix.arch }} -r napi --upload -u ${{ secrets.GITHUB_TOKEN }} -- --CDCMAKE_TOOLCHAIN_FILE:FILEPATH=./cmake/toolchain/ci.cmake
         env:
-          CI: true
-      - name: Upload
-        run: node_modules/.bin/prebuild -r napi --upload -u ${{ secrets.GITHUB_TOKEN }}
-        env:
-          CI: true
-
-  build-linux-musl-amd64:
-    runs-on: ubuntu-20.04
-    container:
-      image: node:18-alpine
-      options: --user root --platform linux/amd64
-    steps:
-      - name: Install musl
-        run: |
-          apk add build-base cmake git openssl-libs-static openssl-dev
-      - name: Clone
-        run: git clone https://github.com/SilentBot1/node-datachannel.git .
-      - name: Build
-        run: npm install --build-from-source
-        env:
-          CI: true
-      - name: Test
-        run: npm run test
-        env:
-          CI: true
-      - name: Upload
-        run: node_modules/.bin/prebuild -r napi --backend cmake-js --upload -u ${{ secrets.GITHUB_TOKEN }}
-        env:
+          SYSROOT: ${{ steps.sysroot.outputs.stdout }}
+          TRIPLE: ${{ matrix.archid }}-${{ matrix.triple }}
+          COMPILER_FLAGS: ${{ matrix.flags }}
           CI: true
 
-  build-linux-armv7:
-    runs-on: ubuntu-20.04
+  # build-linux-musl-amd64:
+  #   runs-on: ubuntu-20.04
+  #   container:
+  #     image: node:18-alpine
+  #     options: --user root --platform linux/amd64
+  #   steps:
+  #     - name: Install musl
+  #       run: |
+  #         apk add build-base cmake git openssl-libs-static openssl-dev
+  #     - name: Clone
+  #       run: git clone https://github.com/SilentBot1/node-datachannel.git .
+  #     - name: Build
+  #       run: npm install --build-from-source
+  #       env:
+  #         CI: true
+  #     - name: Test
+  #       run: npm run test
+  #       env:
+  #         CI: true
+  #     - name: Upload
+  #       run: node_modules/.bin/prebuild -r napi --backend cmake-js --upload -u ${{ secrets.GITHUB_TOKEN }}
+  #       env:
+  #         CI: true
 
-    strategy:
-      matrix:
-        node-version: [16.x]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Prepare Cross Compile
-        run: |
-          sudo apt update
-          sudo apt install -y g++-arm-linux-gnueabihf gcc-arm-linux-gnueabihf
-          mkdir sysroot && cd sysroot
-          wget https://commondatastorage.googleapis.com/chrome-linux-sysroot/toolchain/ef5c4f84bcafb7a3796d36bb1db7826317dde51c/debian_sid_arm_sysroot.tar.xz
-          tar xf debian_sid_arm_sysroot.tar.xz
-          echo "ARM_SYSROOT=$(pwd)" >> $GITHUB_ENV
-          ls -l
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: Build & Upload
-        run: |
-          npm install --ignore-scripts
-          node_modules/.bin/prebuild -r napi --backend cmake-js --arch arm --upload -u ${{ secrets.GITHUB_TOKEN }} -- --CDCMAKE_TOOLCHAIN_FILE:FILEPATH=./cmake/toolchain/armv7.cmake
-        env:
-          CI: true
+  # build-linux-armv7:
+  #   runs-on: ubuntu-20.04
 
-  build-linux-arm64:
-    runs-on: ubuntu-20.04
+  #   strategy:
+  #     matrix:
+  #       node-version: [16.x]
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Prepare Cross Compile
+  #       run: |
+  #         sudo apt update
+  #         sudo apt install -y g++-arm-linux-gnueabihf gcc-arm-linux-gnueabihf
+  #         mkdir sysroot && cd sysroot
+  #         wget https://commondatastorage.googleapis.com/chrome-linux-sysroot/toolchain/ef5c4f84bcafb7a3796d36bb1db7826317dde51c/debian_sid_arm_sysroot.tar.xz
+  #         tar xf debian_sid_arm_sysroot.tar.xz
+  #         echo "ARM_SYSROOT=$(pwd)" >> $GITHUB_ENV
+  #         ls -l
+  #     - name: Use Node.js ${{ matrix.node-version }}
+  #       uses: actions/setup-node@v1
+  #       with:
+  #         node-version: ${{ matrix.node-version }}
+  #     - name: Build & Upload
+  #       run: |
+  #         npm install --ignore-scripts
+  #         node_modules/.bin/prebuild -r napi --backend cmake-js --arch arm --upload -u ${{ secrets.GITHUB_TOKEN }} -- --CDCMAKE_TOOLCHAIN_FILE:FILEPATH=./cmake/toolchain/armv7.cmake
+  #       env:
+  #         CI: true
 
-    strategy:
-      matrix:
-        node-version: [16.x]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Prepare Cross Compile
-        run: |
-          sudo apt update
-          sudo apt install -y g++-aarch64-linux-gnu gcc-aarch64-linux-gnu
-          mkdir sysroot && cd sysroot
-          wget https://commondatastorage.googleapis.com/chrome-linux-sysroot/toolchain/41a6c8dec4c4304d6509e30cbaf9218dffb4438e/debian_bullseye_arm64_sysroot.tar.xz
-          tar xf debian_bullseye_arm64_sysroot.tar.xz
-          echo "ARM64_SYSROOT=$(pwd)" >> $GITHUB_ENV
-          ls -l
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: Build & Upload
-        run: |
-          npm install --ignore-scripts
-          node_modules/.bin/prebuild -r napi --backend cmake-js --arch arm64 --upload -u ${{ secrets.GITHUB_TOKEN }} -- --CDCMAKE_TOOLCHAIN_FILE:FILEPATH=./cmake/toolchain/arm64.cmake
-        env:
-          CI: true
+  # build-linux-arm64:
+  #   runs-on: ubuntu-20.04
+
+  #   strategy:
+  #     matrix:
+  #       node-version: [16.x]
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Prepare Cross Compile
+  #       run: |
+  #         sudo apt update
+  #         sudo apt install -y g++-aarch64-linux-gnu gcc-aarch64-linux-gnu
+  #         mkdir sysroot && cd sysroot
+  #         wget https://commondatastorage.googleapis.com/chrome-linux-sysroot/toolchain/41a6c8dec4c4304d6509e30cbaf9218dffb4438e/debian_bullseye_arm64_sysroot.tar.xz
+  #         tar xf debian_bullseye_arm64_sysroot.tar.xz
+  #         echo "ARM64_SYSROOT=$(pwd)" >> $GITHUB_ENV
+  #         ls -l
+  #     - name: Use Node.js ${{ matrix.node-version }}
+  #       uses: actions/setup-node@v1
+  #       with:
+  #         node-version: ${{ matrix.node-version }}
+  #     - name: Build & Upload
+  #       run: |
+  #         npm install --ignore-scripts
+  #         node_modules/.bin/prebuild -r napi --backend cmake-js --arch arm64 --upload -u ${{ secrets.GITHUB_TOKEN }} -- --CDCMAKE_TOOLCHAIN_FILE:FILEPATH=./cmake/toolchain/arm64.cmake
+  #       env:
+  #         CI: true
 
   # npm-publish:
   #   needs: [build-linux, build-linux-armv7, build-linux-arm64]
