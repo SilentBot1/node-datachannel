@@ -2,9 +2,9 @@ set(CMAKE_SYSTEM_NAME Linux)
 set(triple $ENV{TRIPLE})
 
 # use clang and lld
-set(CMAKE_C_COMPILER clang)
-set(CMAKE_CXX_COMPILER clang)
-add_link_options("-fuse-ld=lld")
+set(CMAKE_C_COMPILER $ENV{GCC})
+set(CMAKE_CXX_COMPILER $ENV{GCC})
+# add_link_options("-fuse-ld=lld")
 
 set(CMAKE_SYSROOT "$ENV{SYSROOT}")
 message(STATUS "Using sysroot: ${CMAKE_SYSROOT}")
