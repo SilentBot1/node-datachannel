@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         node-version: [16.x]
-        arch: [amd64, arm64]
+        arch: [arm64]
         platform: [ubuntu, alpine]
         include:
           - triple: "alpine-linux-musl"
@@ -24,11 +24,12 @@ jobs:
           - triple: "linux-gnu"
             platform: ubuntu
             libc: glibc
-          - archid: x86_64
-            arch: amd64
+          # - archid: x86_64
+          #   arch: amd64
           - archid: aarch64
             arch: arm64
             flags: -march=armv8-a
+            gcc-install: gcc-aarch64-linux-gnu
             
 
     steps:
@@ -47,7 +48,7 @@ jobs:
         with:
           platforms: ${{ matrix.arch }}
       - name: Install system dependencies
-        run: sudo apt update && sudo apt install -y podman clang lld
+        run: sudo apt update && sudo apt install -y podman clang lld ${{ matrix.gcc-install }}
       - name: Build sysroot
         run: "sudo podman build -t ndc-buildroot:${{ matrix.platform }}-${{ matrix.arch }} ./build-containers --file Dockerfile.${{ matrix.platform }}"
       - name: Mount sysroot
