@@ -27,7 +27,7 @@ jobs:
             libc: musl
           - triple: "linux-gnu"
             platform: ubuntu
-            version: 20.04
+            version: 22.04
           # Set baselines per architecture
           - archid: x86_64
             nodearch: x64
@@ -52,14 +52,11 @@ jobs:
           - arch: amd64
             platform: ubuntu
             gcc-install: gcc g++
+            version: 20.04
             gcc: gcc
           # ubuntu uses the triple `arm-linux-gnueabihf` instead of alpine's `armv7-alpine-linux-musleabihf`
           - archid: arm
             arch: arm
-            platform: ubuntu
-          # ubuntu 20.04 uses openssl 1.1.1f, however static versions of openssl 1.1.1 are bugged on aarch64, use ubuntu 22.04 instead
-          - version: 22.04
-            arch: arm64
             platform: ubuntu
 
     steps:
