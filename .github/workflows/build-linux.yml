@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [16.x]
+        node-version: [16]
         arch: [amd64, arm64, arm]
         platform: [ubuntu, alpine]
         include:
@@ -25,18 +25,20 @@ jobs:
             libc: musl
           - triple: "linux-gnu"
             platform: ubuntu
-            libc: glibc
           - archid: x86_64
+            nodearch: x64
             arch: amd64
             gcc-install: gcc g++
             gcc: gcc
           - archid: armv7
             archpost: eabihf
+            nodearch: arm
             arch: arm
             flags: -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=hard -fPIC
             gcc-install: gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
             gcc: arm-linux-gnueabihf-gcc 
           - archid: aarch64
+            nodearch: arm64
             arch: arm64
             flags: -march=armv8-a -fPIC
             gcc-install: gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
@@ -52,10 +54,9 @@ jobs:
             platform: ubuntu
 
     steps:
-      - name: Checkout
-        run: git clone https://github.com/SilentBot1/node-datachannel.git .
+      - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install node dependencies
@@ -75,7 +76,7 @@ jobs:
         id: sysroot
         run: echo "sysroot=$(sudo podman image mount ndc-buildroot:${{ matrix.platform }}-${{ matrix.arch }})" >> $GITHUB_OUTPUT
       - name: Build and upload
-        run: sudo --preserve-env=SYSROOT,TRIPLE,COMPILER_FLAGS,LIBC,GCC,CI node_modules/.bin/prebuild --arch ${{ matrix.arch }} -r napi --backend cmake-js --upload -u ${{ secrets.GITHUB_TOKEN }} -- --CDCMAKE_TOOLCHAIN_FILE:FILEPATH=./cmake/toolchain/ci.cmake
+        run: sudo --preserve-env=SYSROOT,TRIPLE,COMPILER_FLAGS,LIBC,GCC,CI,PATH node_modules/.bin/prebuild --arch ${{ matrix.nodearch }} -r napi --backend cmake-js --upload -u ${{ secrets.GITHUB_TOKEN }} -- --CDCMAKE_TOOLCHAIN_FILE:FILEPATH=./cmake/toolchain/ci.cmake
         env:
           SYSROOT: ${{ steps.sysroot.outputs.sysroot }}
           TRIPLE: ${{ matrix.archid }}-${{ matrix.triple }}${{ matrix.archpost }}
