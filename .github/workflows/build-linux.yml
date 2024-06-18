@@ -25,6 +25,8 @@ jobs:
             platform: alpine
             version: 3.16
             libc: musl
+            gcc-install: clang lld
+            gcc: clang
           - triple: "linux-gnu"
             platform: debian
             version: bullseye
@@ -32,31 +34,31 @@ jobs:
           - archid: x86_64
             nodearch: x64
             arch: amd64
-            gcc-install: clang lld
-            gcc: clang
           - archid: armv7
             archpost: eabihf
             nodearch: arm
             arch: arm
             flags: -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=hard -fPIC
-            gcc-install: clang lld
-            gcc: clang
           - archid: aarch64
             nodearch: arm64
             arch: arm64
             flags: -march=armv8-a -fPIC
-            gcc-install: clang lld
-            gcc: clang 
           # Set edge case overrides for specific platform + architecture
           # gcc has issues building on the same arch but for a different libc, use clang instead
-          # - arch: amd64
-          #   platform: debian
-          #   gcc-install: gcc g++
-          #   gcc: gcc
+          - arch: amd64
+            platform: debian
+            gcc-install: gcc g++
+            gcc: gcc
+          - arch: arm64
+            platform: debian
+            gcc-install: gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+            gcc: aarch64-linux-gnu-gcc
           # debian uses the triple `arm-linux-gnueabihf` instead of alpine's `armv7-alpine-linux-musleabihf`
           - archid: arm
             arch: arm
             platform: debian
+            gcc-install: gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
+            gcc: arm-linux-gnueabihf-gcc 
 
     steps:
       - uses: actions/checkout@v4
