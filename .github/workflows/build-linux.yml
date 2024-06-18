@@ -32,27 +32,27 @@ jobs:
           - archid: x86_64
             nodearch: x64
             arch: amd64
-            gcc-install: gcc g++
-            gcc: gcc
+            gcc-install: clang lld
+            gcc: clang
           - archid: armv7
             archpost: eabihf
             nodearch: arm
             arch: arm
             flags: -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=hard -fPIC
-            gcc-install: gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
-            gcc: arm-linux-gnueabihf-gcc 
+            gcc-install: clang lld
+            gcc: clang
           - archid: aarch64
             nodearch: arm64
             arch: arm64
             flags: -march=armv8-a -fPIC
-            gcc-install: gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-            gcc: aarch64-linux-gnu-gcc 
+            gcc-install: clang lld
+            gcc: clang 
           # Set edge case overrides for specific platform + architecture
           # gcc has issues building on the same arch but for a different libc, use clang instead
           - arch: amd64
-            platform: alpine
-            gcc-install: clang lld
-            gcc: clang
+            platform: ubuntu
+            gcc-install: gcc g++
+            gcc: gcc
           # ubuntu uses the triple `arm-linux-gnueabihf` instead of alpine's `armv7-alpine-linux-musleabihf`
           - archid: arm
             arch: arm
