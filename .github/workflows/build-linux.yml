@@ -79,6 +79,8 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y podman ninja-build ${{ matrix.gcc-install }}
+      - name: List installed libc
+        run: apt list --installed | grep libc6-dev
       - name: Build sysroot
         run: sudo podman build --isolation=chroot -t ndc-buildroot:${{ matrix.platform }}-${{ matrix.arch }} ./build-containers --file Dockerfile.${{ matrix.platform }} --platform linux/${{ matrix.arch }} --build-arg="version=${{ matrix.version }}"
       - name: Mount sysroot
