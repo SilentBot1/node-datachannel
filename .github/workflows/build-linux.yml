@@ -96,7 +96,7 @@ jobs:
           GCC: ${{ matrix.gcc }}
           CI: true
       - name: Test
-        run: sudo podman run --isolation=chroot --rm -v $(pwd):/usr/app/ -t ndc-buildroot:${{ matrix.platform }}-${{ matrix.arch }} npm run test
+        run: sudo podman run --rm -v $(pwd):/usr/app/ -t ndc-buildroot:${{ matrix.platform }}-${{ matrix.arch }} npm run test
       - name: Upload
         run: sudo --perserve-env=CI,LIBC node_modules/.bin/prebuild -r napi --upload -u ${{ secrets.GITHUB_TOKEN }}
         env:
