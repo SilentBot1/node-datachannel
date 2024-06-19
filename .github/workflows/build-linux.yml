@@ -82,7 +82,7 @@ jobs:
       - name: List installed libc
         run: apt list --installed | grep libc6-dev
       - name: Build sysroot
-        run: sudo podman build --isolation=chroot -t ndc-buildroot:${{ matrix.platform }}-${{ matrix.arch }} ./build-containers --file Dockerfile.${{ matrix.platform }} --platform linux/${{ matrix.arch }} --build-arg="version=${{ matrix.version }}" --build-arg="node-version=${{ matrix.node-version }}"
+        run: sudo podman build --isolation=chroot -t ndc-buildroot:${{ matrix.platform }}-${{ matrix.arch }} ./build-containers --file Dockerfile.${{ matrix.platform }} --platform linux/${{ matrix.arch }} --build-arg="version=${{ matrix.version }}" --build-arg="node_version=${{ matrix.node-version }}"
       - name: Mount sysroot
         id: sysroot
         run: echo "sysroot=$(sudo podman image mount ndc-buildroot:${{ matrix.platform }}-${{ matrix.arch }})" >> $GITHUB_OUTPUT
