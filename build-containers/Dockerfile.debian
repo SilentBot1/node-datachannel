@@ -1,4 +1,7 @@
 ARG version=buster
-FROM debian:${version}
+ARG node-version=16
+FROM node:${node-version}-${version}
 RUN apt update
 RUN apt install -y build-essential libssl-dev
+
+WORKDIR /usr/app/
